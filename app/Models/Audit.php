@@ -85,4 +85,38 @@ class Audit extends Model
     {
         return route('audits.share', $this->share_token);
     }
+
+    public function calculateSeoScore(): int
+    {
+        $score = 100;
+        
+        foreach ($this->recommendations as $rec) {
+            $deduction = match($rec->priority) {
+                'fix_first' => $rec->impact_score * 2,
+                'next' => $rec->impact_score * 1.5,
+                'nice_to_have' => $rec->impact_score * 0.5,
+                default => $rec->impact_score,
+            };
+            
+            $score -= $deduction;
+        }
+        
+        return max(0, (int) round($score));
+    }
+
+    public function getScoreColor(): string
+    {
+        if ($this->score >= 80) return 'green';
+        if ($this->score >= 60) return 'yellow';
+        if ($this->score >= 40) return 'orange';
+        return 'red';
+    }
+
+    public function getScoreLabel(): string
+    {
+        if ($this->score >= 80) return 'Excellent';
+        if ($this->score >= 60) return 'Good';
+        if ($this->score >= 40) return 'Needs Work';
+        return 'Critical';
+    }
 }

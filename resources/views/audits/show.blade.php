@@ -9,7 +9,32 @@
         </div>
 
         <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">SEO Audit Results</h1>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">SEO Audit Results</h1>
+            
+            @if($audit->score !== null)
+                <div class="mb-8 text-center py-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg">
+                    <p class="text-lg text-gray-600 dark:text-gray-400 mb-2">Overall SEO Health</p>
+                    <div class="flex items-center justify-center gap-3">
+                        <span class="text-6xl font-bold 
+                            @if($audit->getScoreColor() === 'green') text-green-600 dark:text-green-400
+                            @elseif($audit->getScoreColor() === 'yellow') text-yellow-600 dark:text-yellow-400
+                            @elseif($audit->getScoreColor() === 'orange') text-orange-600 dark:text-orange-400
+                            @else text-red-600 dark:text-red-400
+                            @endif">
+                            {{ $audit->score }}
+                        </span>
+                        <span class="text-2xl text-gray-400 dark:text-gray-500">/100</span>
+                    </div>
+                    <p class="text-sm font-medium mt-2
+                        @if($audit->getScoreColor() === 'green') text-green-700 dark:text-green-300
+                        @elseif($audit->getScoreColor() === 'yellow') text-yellow-700 dark:text-yellow-300
+                        @elseif($audit->getScoreColor() === 'orange') text-orange-700 dark:text-orange-300
+                        @else text-red-700 dark:text-red-300
+                        @endif">
+                        {{ $audit->getScoreLabel() }}
+                    </p>
+                </div>
+            @endif
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div>

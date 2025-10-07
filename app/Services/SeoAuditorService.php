@@ -28,6 +28,10 @@ class SeoAuditorService
 
             $this->generateRecommendations($audit, $crawlData);
 
+            $audit->update([
+                'score' => $audit->fresh()->calculateSeoScore(),
+            ]);
+
         } catch (\Exception $e) {
             $audit->update([
                 'status' => 'failed',
