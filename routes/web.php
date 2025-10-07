@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,9 @@ Route::get('/how-it-works', [MarketingController::class, 'howItWorks'])->name('h
 Route::get('/privacy', [MarketingController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [MarketingController::class, 'terms'])->name('terms');
 Route::get('/contact', [MarketingController::class, 'contact'])->name('contact');
+
+Route::post('/audits', [AuditController::class, 'store'])->name('audits.store');
+Route::get('/audits/{audit}', [AuditController::class, 'show'])->name('audits.show');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
