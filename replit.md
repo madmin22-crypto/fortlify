@@ -3,11 +3,17 @@
 ## Overview
 Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conversion audits for small businesses. The platform focuses on simplicity and transparency with prioritized recommendations (Fix First / Next / Nice to Have), runs without third-party SEO subscriptions, and includes a working audit engine (crawler + Lighthouse), Stripe billing, and modular integrations.
 
-**Current Status**: Free Audit feature functional with comprehensive SSRF protection. SEO crawler, recommendation engine, and results display complete. Lighthouse API integration and email capture pending.
+**Current Status**: Free Audit feature fully functional with async job queue processing, real Google Lighthouse scores, email capture, and comprehensive SSRF protection. SEO crawler, recommendation engine, and results display complete.
 
 **Last Updated**: October 7, 2025
 
 ## Recent Changes
+- **Oct 7, 2025**: Implemented async Job Queue with ProcessAudit job for background audit processing
+- **Oct 7, 2025**: Created processing page with loading spinner and 3-second auto-refresh
+- **Oct 7, 2025**: Added Queue Worker workflow for continuous job processing (3 retries, 5-min timeout)
+- **Oct 7, 2025**: Integrated Google PageSpeed Insights API for real Lighthouse performance scores
+- **Oct 7, 2025**: Added optional email capture with shareable audit result links
+- **Oct 7, 2025**: Implemented Overall SEO Health score (0-100) with color-coded display
 - **Oct 7, 2025**: Built Free Audit feature with public form submission and results display
 - **Oct 7, 2025**: Implemented SEO crawler with title tags, meta descriptions, H1s, canonical tags, robots.txt analysis
 - **Oct 7, 2025**: Created recommendation engine with Fix First/Next/Nice to Have prioritization and effort scores
@@ -73,6 +79,9 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 /contact - Contact form
 /privacy - Privacy policy
 /terms - Terms of service
+/audits - POST - Create new audit (dispatches ProcessAudit job)
+/audits/{audit}/processing - Processing status page with auto-refresh
+/audits/{audit} - Audit results page
 /login - Breeze login
 /register - Breeze registration
 /dashboard - (To be built) Authenticated dashboard
@@ -80,11 +89,13 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 
 ### Key Files
 - `app/Models/Workspace.php` - Workspace model with relationships
-- `app/Models/Audit.php` - Audit model with soft deletes
+- `app/Models/Audit.php` - Audit model with soft deletes and SEO score calculation
 - `app/Models/Recommendation.php` - Recommendation model
-- `app/Http/Controllers/AuditController.php` - Free audit submission and results display
-- `app/Services/SeoAuditorService.php` - SEO crawler with SSRF protection and recommendation engine
+- `app/Jobs/ProcessAudit.php` - Background job for async audit processing
+- `app/Http/Controllers/AuditController.php` - Audit submission, processing status, and results display
+- `app/Services/SeoAuditorService.php` - SEO crawler with SSRF protection, Lighthouse API integration, and recommendation engine
 - `app/Http/Controllers/MarketingController.php` - Public marketing pages
+- `resources/views/audits/processing.blade.php` - Processing page with loading spinner
 - `resources/views/audits/show.blade.php` - Audit results page with prioritized recommendations
 - `resources/views/marketing/home.blade.php` - Home page with free audit form
 - `resources/views/components/layouts/marketing.blade.php` - Marketing layout
@@ -107,12 +118,18 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 ### Free Audit Implementation
 The free audit feature allows users to submit any URL for SEO analysis without authentication:
 
-**Workflow:**
-1. User submits URL via form on homepage
+**Async Workflow:**
+1. User submits URL and optional email via form on homepage
 2. AuditController creates audit record with 'pending' status and generates share token
-3. SeoAuditorService crawls the URL with comprehensive SSRF protection
-4. Recommendation engine analyzes findings and assigns priorities (Fix First/Next/Nice to Have) with effort scores
-5. User redirected to results page showing color-coded prioritized recommendations
+3. ProcessAudit job dispatched to queue for background processing
+4. User instantly redirected to processing page with loading spinner
+5. Processing page auto-refreshes every 3 seconds to check status
+6. Queue Worker picks up job and updates audit status to 'running'
+7. SeoAuditorService crawls URL with SSRF protection and calls Google PageSpeed Insights API
+8. Recommendation engine analyzes findings and assigns priorities with effort scores
+9. SEO Health score (0-100) calculated based on recommendations
+10. On completion, processing page auto-redirects to results
+11. If email provided, shareable link displayed with copy-to-clipboard button
 
 **SEO Crawler Checks:**
 - Title tags (presence, length, uniqueness)
@@ -142,6 +159,12 @@ The free audit feature allows users to submit any URL for SEO analysis without a
 
 ## Completed Features ✅
 - ✅ Free Audit form with URL validation and submission
+- ✅ Async Job Queue with ProcessAudit job for background processing
+- ✅ Processing page with loading spinner and auto-refresh
+- ✅ Queue Worker workflow for continuous job execution
+- ✅ Google PageSpeed Insights API integration for real Lighthouse scores
+- ✅ Optional email capture with shareable audit result links
+- ✅ Overall SEO Health score (0-100) with color-coded display (Excellent/Good/Needs Work/Critical)
 - ✅ SEO crawler with technical checks (title, meta, H1s, canonical, images, links, robots.txt)
 - ✅ Recommendation engine with Fix First/Next/Nice to Have prioritization
 - ✅ Audit results page with color-coded priority sections and effort scores
@@ -153,25 +176,20 @@ The free audit feature allows users to submit any URL for SEO analysis without a
 
 ## Pending Backend Implementation
 - Contact form submission handler (will integrate with MailerLite)
-- Email capture for free audit results (optional user email after audit completes)
-- Shareable audit result links (currently using share_token, needs UI)
-- Job queue for async audit processing (currently synchronous)
-- Lighthouse Integration (Google PageSpeed Insights API - currently using mock scores)
+- Email delivery for audit results (email capture implemented, sending pending)
 - Dashboard authenticated routes
 - Stripe checkout and subscription management
 - Workspace switching and team management
 - Audit limits enforcement based on plan
 
 ## Next Steps (Priority Order)
-1. **Lighthouse Integration**: Integrate Google PageSpeed Insights API for real performance scores
-2. **Email Capture**: Optional email collection after audit completes for result sharing
-3. **Job Queue**: Move audit processing to background jobs for better UX
-4. **App Dashboard**: Build authenticated dashboard UI showing audit history
-5. **Stripe Billing**: Complete checkout flow and subscription gates
-6. **Workspace Management**: Implement workspace switching and team member invitation
-7. **Audit Limits**: Enforce plan-based limits (1/month free, 10/month starter, unlimited growth)
-8. **Contact Form**: Implement backend handler for contact submissions
-9. **Optional Integrations**: Google Search Console OAuth, SERP API
+1. **App Dashboard**: Build authenticated dashboard UI showing audit history
+2. **Stripe Billing**: Complete checkout flow and subscription gates
+3. **Workspace Management**: Implement workspace switching and team member invitation
+4. **Audit Limits**: Enforce plan-based limits (1/month free, 10/month starter, unlimited growth)
+5. **Contact Form**: Implement backend handler for contact submissions
+6. **Email Delivery**: Send audit results via email when address is provided
+7. **Optional Integrations**: Google Search Console OAuth, SERP API
 
 ## Environment Variables
 See `.env.example` for full configuration. Key variables:
@@ -182,13 +200,14 @@ See `.env.example` for full configuration. Key variables:
 - `MAILERLITE_API_KEY` - Email marketing integration (to be added)
 
 ## Development Workflow
-1. **Workflow**: Laravel Server running on port 5000 with `php artisan serve --host=0.0.0.0 --port=5000`
-2. **Assets**: Vite handles Tailwind CSS compilation and Alpine.js bundling
-3. **Migrations**: Run `php artisan migrate` for schema changes
-4. **Testing**: Use Pest for feature and unit tests (to be configured)
+1. **Laravel Server**: Running on port 5000 with `php artisan serve --host=0.0.0.0 --port=5000`
+2. **Queue Worker**: Running continuously with `php artisan queue:work --tries=3 --timeout=300` for background job processing
+3. **Assets**: Vite handles Tailwind CSS compilation and Alpine.js bundling
+4. **Migrations**: Run `php artisan migrate` for schema changes
+5. **Testing**: Use Pest for feature and unit tests (to be configured)
 
 ## Notes
-- Marketing pages link to registration instead of free audit form (audit engine not yet built)
 - Contact form has placeholder action (needs backend implementation)
 - Stripe integration configured but checkout flow not built
 - All authentication handled by Laravel Breeze (login, register, password reset, email verification)
+- Email capture implemented but actual email delivery pending (requires mail service like MailerLite)
