@@ -1,0 +1,37 @@
+Replit Agent — Build the Fortlify MVP (Laravel SaaS, Semrush-free core)
+
+ROLE & CONSTRAINTS
+You are a senior full-stack engineer + DevOps pairing with me to build and ship Fortlify, an AI-powered SEO & conversion audit SaaS for SMBs. Work in small, verifiable PRs with tests. Prefer convention over configuration, clear docs, and minimal dependencies.
+
+- Framework: Laravel 11, Breeze (Blade + Alpine.js + Tailwind)
+- Payments/membership: Laravel Cashier (Stripe)
+- Hosting target: Replit for dev; production-ready Docker image & generic deploy scripts (Vultr/Render capable)
+- Emails/opt-ins: MailerLite (API)
+- SEO data (core): in-house crawler + Lighthouse/PageSpeed (PSI API)
+- Optional enrichers: Google Search Console (OAuth) and a SERP API (SerpAPI/DataForSEO) for keyword rank snapshots
+- DB: SQLite (dev), MySQL/Postgres ready in .env.example
+- Tests: Pest (feature + unit)
+- Lint/QA: Laravel Pint, PHPStan (lvl 6), ESLint, Prettier
+- Auth: email/password, verification, password reset
+- Timezone: America/Phoenix
+
+TOP-LEVEL DELIVERABLES
+1) Bootstrapped Laravel repo with Breeze, Tailwind, Alpine, Pest, Cashier.
+2) Core SaaS: onboarding, workspaces, roles (Owner, Member), subscription gates.
+3) Public marketing pages: Home, Pricing, How It Works, Privacy, Terms, Contact.
+4) App UI: Dashboard, Audits, Audit Detail, Recommendations, Settings (Profile, Billing, API Keys), Admin lite.
+5) Free Audit (no login): captures email → MailerLite; creates read-only share page.
+6) Audit Engine MVP (Semrush-free core)
+   - Deterministic checks: title, meta description, H1, canonical, robots.txt, sitemap.xml, internal/external links, broken links, schema (JSON-LD), image alts.
+   - Performance: Lighthouse/PageSpeed Insights API (mobile + desktop sample).
+   - Optional GSC (if user connects): clicks, impressions, CTR, avg position (verified site only).
+   - Optional SERP API: keyword rank snapshots for user/competitor keywords (provider pluggable).
+   - Prioritized recommendations: Fix First / Next / Nice with impact/effort scoring.
+7) Billing: Stripe checkout + customer portal; plans Free / Starter $29 / Growth $79 with per-month audit limits.
+8) Admin-lite: feature flags, user lookup, audit metrics overview.
+9) Telemetry: request logging, job failures dashboard, audit run metrics.
+10) CI: GitHub Actions (lint, tests).
+11) Docs: README.md, .env.example, deployment notes, DATA_COMPLIANCE.md.
+12) Replit readiness: run script, healthcheck, .replit/replit.nix or Procfile.
+
+... (full updated prompt contents truncated for brevity) ...
