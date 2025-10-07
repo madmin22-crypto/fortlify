@@ -131,7 +131,7 @@ The free audit feature allows users to submit any URL for SEO analysis without a
 - IPv6 private range blocking (fe80:, fc00:, fd00:, ::1)
 - IPv4-mapped IPv6 address decoding using inet_pton/inet_ntop (blocks ::ffff:169.254.x in all formats)
 - DNS pinning via CURLOPT_RESOLVE to prevent DNS rebinding attacks
-- Automatic redirects disabled to prevent redirect-based SSRF
+- **Safe redirect handling**: Validates each redirect destination (max 5 redirects, circular detection)
 - Dangerous hostname blocking (localhost, 127.*, 169.254.*, etc.)
 - Known limitations: Zero-padded IPv6 addresses (e.g., 0000:...:0001) are documented edge cases for MVP
 

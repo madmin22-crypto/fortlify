@@ -40,33 +40,81 @@ class SeoAuditorService
 
     private function crawlWebsite(string $url): array
     {
-        $validatedIp = $this->validateUrl($url);
-        
-        $parsedUrl = parse_url($url);
-        $host = $parsedUrl['host'];
-        $port = $parsedUrl['port'] ?? ($parsedUrl['scheme'] === 'https' ? 443 : 80);
+        $maxRedirects = 5;
+        $redirectCount = 0;
+        $visitedUrls = [];
+        $currentUrl = $url;
 
         try {
-            $response = Http::timeout(30)
-                ->withOptions([
-                    'allow_redirects' => false,
-                    'curl' => [
-                        CURLOPT_RESOLVE => ["{$host}:{$port}:{$validatedIp}"],
-                    ],
-                ])
-                ->get($url);
-            
-            if (!$response->successful()) {
+            while ($redirectCount < $maxRedirects) {
+                if (in_array($currentUrl, $visitedUrls)) {
+                    throw new \Exception("Circular redirect detected");
+                }
+                
+                $visitedUrls[] = $currentUrl;
+                
+                $validatedIp = $this->validateUrl($currentUrl);
+                
+                $parsedUrl = parse_url($currentUrl);
+                $host = $parsedUrl['host'];
+                $port = $parsedUrl['port'] ?? ($parsedUrl['scheme'] === 'https' ? 443 : 80);
+
+                $response = Http::timeout(30)
+                    ->withOptions([
+                        'allow_redirects' => false,
+                        'curl' => [
+                            CURLOPT_RESOLVE => ["{$host}:{$port}:{$validatedIp}"],
+                        ],
+                    ])
+                    ->get($currentUrl);
+
+                if ($response->successful()) {
+                    $html = $response->body();
+                    return $this->extractSeoData($html, $currentUrl);
+                }
+
+                if ($response->redirect()) {
+                    $location = $response->header('Location');
+                    
+                    if (!$location) {
+                        throw new \Exception("Redirect without Location header");
+                    }
+
+                    if (!filter_var($location, FILTER_VALIDATE_URL)) {
+                        $location = $this->resolveRelativeUrl($currentUrl, $location);
+                    }
+
+                    $currentUrl = $location;
+                    $redirectCount++;
+                    continue;
+                }
+
                 throw new \Exception("Failed to fetch website. HTTP status: " . $response->status());
             }
 
-            $html = $response->body();
-            
-            return $this->extractSeoData($html, $url);
+            throw new \Exception("Too many redirects (max {$maxRedirects})");
             
         } catch (\Exception $e) {
             throw new \Exception("Crawl failed: " . $e->getMessage());
         }
+    }
+
+    private function resolveRelativeUrl(string $baseUrl, string $relativeUrl): string
+    {
+        if (str_starts_with($relativeUrl, '//')) {
+            $parsedBase = parse_url($baseUrl);
+            return $parsedBase['scheme'] . ':' . $relativeUrl;
+        }
+
+        if (str_starts_with($relativeUrl, '/')) {
+            $parsedBase = parse_url($baseUrl);
+            $scheme = $parsedBase['scheme'];
+            $host = $parsedBase['host'];
+            $port = isset($parsedBase['port']) ? ':' . $parsedBase['port'] : '';
+            return "{$scheme}://{$host}{$port}{$relativeUrl}";
+        }
+
+        return rtrim($baseUrl, '/') . '/' . ltrim($relativeUrl, '/');
     }
 
     /**
