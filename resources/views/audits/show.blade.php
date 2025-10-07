@@ -8,6 +8,25 @@
             </a>
         </div>
 
+        @if($audit->email)
+            <div class="mb-6 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+                <div class="flex items-start">
+                    <svg class="h-5 w-5 text-indigo-600 dark:text-indigo-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                    </svg>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-indigo-800 dark:text-indigo-200">
+                            <span class="font-medium">Results saved to {{ $audit->email }}</span>
+                        </p>
+                        <p class="text-xs text-indigo-600 dark:text-indigo-300 mt-1">
+                            You can access this audit anytime with the link below
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg p-6 mb-8">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">SEO Audit Results</h1>
             
@@ -78,6 +97,34 @@
                 </div>
             @endif
         </div>
+
+        <div class="mb-8 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Share this audit</label>
+            <div class="flex items-center gap-2">
+                <input type="text" readonly value="{{ route('audits.show', $audit) }}" 
+                    id="shareUrl"
+                    class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md text-sm">
+                <button onclick="copyShareUrl()" 
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
+                    Copy Link
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2" id="copyMessage"></p>
+        </div>
+
+        <script>
+        function copyShareUrl() {
+            const input = document.getElementById('shareUrl');
+            input.select();
+            document.execCommand('copy');
+            const message = document.getElementById('copyMessage');
+            message.textContent = '✓ Link copied to clipboard!';
+            message.className = 'text-xs text-green-600 dark:text-green-400 mt-2';
+            setTimeout(() => {
+                message.textContent = '';
+            }, 3000);
+        }
+        </script>
 
         @if($audit->recommendations->isEmpty())
             <div class="bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">

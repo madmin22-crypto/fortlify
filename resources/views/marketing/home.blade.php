@@ -86,7 +86,10 @@
                             class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email (optional - to receive results)</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Email (optional)
+                        </label>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-2">We'll save your audit results and send you a shareable link</p>
                         <input type="email" name="email" id="email" placeholder="you@example.com" 
                             value="{{ old('email') }}"
                             class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
