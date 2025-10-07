@@ -2,17 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessAudit;
 use App\Models\Audit;
-use App\Services\SeoAuditorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class AuditController extends Controller
 {
-    public function __construct(
-        private SeoAuditorService $auditor
-    ) {}
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -33,24 +29,28 @@ class AuditController extends Controller
             'share_token' => Str::random(32),
         ]);
 
-        try {
-            $this->auditor->runAudit($audit);
-        } catch (\Exception $e) {
-            $audit->update([
-                'status' => 'failed',
-                'metadata' => [
-                    'error' => $e->getMessage(),
-                ],
-            ]);
-
-            return back()
-                ->withErrors(['url' => 'Failed to audit the website: ' . $e->getMessage()])
-                ->withInput();
-        }
+        ProcessAudit::dispatch($audit);
 
         return redirect()
-            ->route('audits.show', $audit)
-            ->with('success', 'Audit completed successfully!');
+            ->route('audits.processing', $audit)
+            ->with('success', 'Your audit is being processed...');
+    }
+
+    public function processing(Audit $audit)
+    {
+        if ($audit->status === 'completed') {
+            return redirect()->route('audits.show', $audit);
+        }
+
+        if ($audit->status === 'failed') {
+            return redirect()
+                ->route('home')
+                ->withErrors(['url' => 'Audit failed: ' . ($audit->metadata['error'] ?? 'Unknown error')]);
+        }
+
+        return view('audits.processing', [
+            'audit' => $audit,
+        ]);
     }
 
     public function show(Audit $audit)
