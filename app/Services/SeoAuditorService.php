@@ -366,11 +366,56 @@ class SeoAuditorService
 
     private function getLighthouseScores(string $url): array
     {
-        return [
-            'mobile_score' => null,
-            'desktop_score' => null,
-            'lighthouse_note' => 'Lighthouse integration pending - requires PageSpeed Insights API key',
-        ];
+        $apiKey = env('PAGESPEED_API_KEY');
+        
+        if (!$apiKey) {
+            return [
+                'mobile_score' => null,
+                'desktop_score' => null,
+                'lighthouse_note' => 'PageSpeed API key not configured',
+            ];
+        }
+
+        try {
+            $mobileScore = $this->getPageSpeedScore($url, 'mobile', $apiKey);
+            $desktopScore = $this->getPageSpeedScore($url, 'desktop', $apiKey);
+
+            return [
+                'mobile_score' => $mobileScore,
+                'desktop_score' => $desktopScore,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'mobile_score' => null,
+                'desktop_score' => null,
+                'lighthouse_error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    private function getPageSpeedScore(string $url, string $strategy, string $apiKey): ?int
+    {
+        $response = Http::timeout(60)
+            ->get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed', [
+                'url' => $url,
+                'key' => $apiKey,
+                'strategy' => $strategy,
+                'category' => 'performance',
+            ]);
+
+        if (!$response->successful()) {
+            throw new \Exception("PageSpeed API error ({$strategy}): " . $response->status());
+        }
+
+        $data = $response->json();
+        
+        $score = $data['lighthouseResult']['categories']['performance']['score'] ?? null;
+        
+        if ($score === null) {
+            return null;
+        }
+
+        return (int) round($score * 100);
     }
 
     private function generateRecommendations(Audit $audit, array $crawlData): void
