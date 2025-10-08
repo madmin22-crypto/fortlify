@@ -60,9 +60,9 @@ class SeoAuditorService
 
             $this->generateRecommendations($audit, $pagesData);
 
-            $audit->update([
-                'score' => $audit->fresh()->calculateSeoScore(),
-            ]);
+            $audit->refresh();
+            $score = $audit->calculateSeoScore();
+            $audit->update(['score' => $score]);
 
         } catch (\Exception $e) {
             $audit->update([
@@ -112,12 +112,20 @@ class SeoAuditorService
         while (!empty($queue) && count($visited) < $limit) {
             $batch = [];
             $batchUrls = [];
+            $validatedIps = [];
             
             while (!empty($queue) && count($batch) < 5 && (count($visited) + count($batch)) < $limit) {
                 $url = array_shift($queue);
                 if (!in_array($url, $visited) && !in_array($url, $batchUrls)) {
-                    $batch[] = $url;
-                    $batchUrls[] = $url;
+                    try {
+                        $validatedIp = $this->validateUrl($url);
+                        $batch[] = $url;
+                        $batchUrls[] = $url;
+                        $validatedIps[] = $validatedIp;
+                    } catch (\Exception $e) {
+                        $visited[] = $url;
+                        continue;
+                    }
                 }
             }
             
@@ -125,9 +133,24 @@ class SeoAuditorService
                 break;
             }
             
-            $responses = Http::pool(fn ($pool) => collect($batch)->map(fn ($url) => 
-                $pool->timeout(30)->get($url)
-            )->all());
+            $responses = Http::pool(function ($pool) use ($batch, $validatedIps) {
+                $requests = [];
+                foreach ($batch as $index => $url) {
+                    $parsedUrl = parse_url($url);
+                    $host = $parsedUrl['host'];
+                    $port = $parsedUrl['port'] ?? ($parsedUrl['scheme'] === 'https' ? 443 : 80);
+                    
+                    $requests[] = $pool->timeout(30)
+                        ->withOptions([
+                            'allow_redirects' => false,
+                            'curl' => [
+                                CURLOPT_RESOLVE => ["{$host}:{$port}:{$validatedIps[$index]}"],
+                            ],
+                        ])
+                        ->get($url);
+                }
+                return $requests;
+            });
             
             foreach ($batch as $index => $currentUrl) {
                 if (in_array($currentUrl, $visited)) {
@@ -138,6 +161,10 @@ class SeoAuditorService
                 
                 try {
                     $response = $responses[$index];
+                    
+                    if (!is_object($response) || !method_exists($response, 'successful')) {
+                        continue;
+                    }
                     
                     if (!$response->successful()) {
                         continue;
