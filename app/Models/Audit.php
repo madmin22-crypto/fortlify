@@ -90,6 +90,9 @@ class Audit extends Model
     {
         $score = 100;
         
+        $pagesScanned = $this->metadata['pages_scanned'] ?? 1;
+        $pagesScanned = max(1, $pagesScanned);
+        
         foreach ($this->recommendations as $rec) {
             $deduction = match($rec->priority) {
                 'fix_first' => $rec->impact_score * 2,
@@ -98,7 +101,7 @@ class Audit extends Model
                 default => $rec->impact_score,
             };
             
-            $score -= $deduction;
+            $score -= ($deduction / $pagesScanned);
         }
         
         return max(0, (int) round($score));
