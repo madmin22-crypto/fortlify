@@ -44,9 +44,9 @@ return [
             'tolerance' => env('STRIPE_WEBHOOK_TOLERANCE', 300),
         ],
         'prices' => [
-            'starter' => env('STRIPE_PRICE_STARTER'),
-            'growth' => env('STRIPE_PRICE_GROWTH'),
-            'onetime' => env('STRIPE_PRICE_ONETIME'),
+            'starter' => env('STRIPE_PRICE_STARTER') ?: getenv('STRIPE_PRICE_STARTER'),
+            'growth' => env('STRIPE_PRICE_GROWTH') ?: getenv('STRIPE_PRICE_GROWTH'),
+            'onetime' => env('STRIPE_PRICE_ONETIME') ?: getenv('STRIPE_PRICE_ONETIME'),
         ],
     ],
 
