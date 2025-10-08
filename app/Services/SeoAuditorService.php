@@ -110,33 +110,59 @@ class SeoAuditorService
         $pagesCrawled = [];
         
         while (!empty($queue) && count($visited) < $limit) {
-            $currentUrl = array_shift($queue);
+            $batch = [];
+            $batchUrls = [];
             
-            if (in_array($currentUrl, $visited)) {
-                continue;
+            while (!empty($queue) && count($batch) < 5 && (count($visited) + count($batch)) < $limit) {
+                $url = array_shift($queue);
+                if (!in_array($url, $visited) && !in_array($url, $batchUrls)) {
+                    $batch[] = $url;
+                    $batchUrls[] = $url;
+                }
             }
             
-            $visited[] = $currentUrl;
+            if (empty($batch)) {
+                break;
+            }
             
-            try {
-                $pageData = $this->crawlWebsite($currentUrl);
-                $pagesCrawled[] = $currentUrl;
-                
-                $pageDataClean = $pageData;
-                unset($pageDataClean['html']);
-                $pagesData[] = $pageDataClean;
-                
-                if (count($visited) < $limit) {
-                    $links = $this->extractLinks($pageData['html'] ?? '', $currentUrl, $domain, $scheme);
-                    foreach ($links as $link) {
-                        if (!in_array($link, $visited) && !in_array($link, $queue)) {
-                            $queue[] = $link;
-                        }
-                    }
+            $responses = Http::pool(fn ($pool) => collect($batch)->map(fn ($url) => 
+                $pool->timeout(30)->get($url)
+            )->all());
+            
+            foreach ($batch as $index => $currentUrl) {
+                if (in_array($currentUrl, $visited)) {
+                    continue;
                 }
                 
-            } catch (\Exception $e) {
-                continue;
+                $visited[] = $currentUrl;
+                
+                try {
+                    $response = $responses[$index];
+                    
+                    if (!$response->successful()) {
+                        continue;
+                    }
+                    
+                    $html = $response->body();
+                    $pageData = $this->extractSeoData($html, $currentUrl);
+                    $pagesCrawled[] = $currentUrl;
+                    
+                    $pageDataClean = $pageData;
+                    unset($pageDataClean['html']);
+                    $pagesData[] = $pageDataClean;
+                    
+                    if (count($visited) < $limit) {
+                        $links = $this->extractLinks($pageData['html'] ?? '', $currentUrl, $domain, $scheme);
+                        foreach ($links as $link) {
+                            if (!in_array($link, $visited) && !in_array($link, $queue)) {
+                                $queue[] = $link;
+                            }
+                        }
+                    }
+                    
+                } catch (\Exception $e) {
+                    continue;
+                }
             }
         }
         
