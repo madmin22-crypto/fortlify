@@ -11,6 +11,11 @@ class SubscriptionController extends Controller
     {
         $plan = $request->input('plan');
         
+        \Log::info('Checkout request received', [
+            'plan' => $plan,
+            'all_input' => $request->all(),
+        ]);
+        
         $prices = [
             'starter' => config('services.stripe.prices.starter'),
             'growth' => config('services.stripe.prices.growth'),
@@ -18,6 +23,7 @@ class SubscriptionController extends Controller
         ];
         
         if (!isset($prices[$plan])) {
+            \Log::error('Invalid plan', ['plan' => $plan]);
             return redirect()->route('pricing')->withErrors(['plan' => 'Invalid plan selected']);
         }
         
