@@ -1,0 +1,105 @@
+Internal Server Error
+
+Stripe\Exception\AuthenticationException
+No API key provided. Set your API key when constructing the StripeClient instance, or provide it on a per-request basis using the `api_key` key in the $opts argument.
+POST d312c64c-d1fb-450d-91ee-b46d533e6781-00-xib058mt2gtm.kirk.replit.dev
+PHP 8.2.23 — Laravel 11.46.1
+
+Expand
+vendor frames
+9 vendor frames collapsed
+
+app/Http/Controllers/SubscriptionController.php
+:45
+checkout
+47 vendor frames collapsed
+
+public/index.php
+:17
+require_once
+1 vendor frame collapsed
+app/Http/Controllers/SubscriptionController.php :45
+            ]);
+        }
+        
+        // Handle recurring subscriptions
+        return $user->newSubscription('default', $prices[$plan])
+            ->checkout([
+                'success_url' => route('dashboard') . '?checkout=success',
+                'cancel_url' => route('pricing'),
+            ]);
+    }
+    
+    public function billingPortal()
+    {
+        return Auth::user()->redirectToBillingPortal(route('dashboard'));
+    }
+}
+Request
+POST /subscribe
+Headers
+host
+d312c64c-d1fb-450d-91ee-b46d533e6781-00-xib058mt2gtm.kirk.replit.dev
+user-agent
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
+content-length
+60
+accept
+text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+en-US,en;q=0.9
+cache-control
+max-age=0
+content-type
+application/x-www-form-urlencoded
+cookie
+XSRF-TOKEN=eyJpdiI6IllWRmxLdGxCUnZYRGFMM3ZYNmlTZkE9PSIsInZhbHVlIjoiUTRJM1JILzlyRlAva3pNcmVFS3orVTIzcFRVNG9MZlpubDNJMTEydko3OXN4SDFKSlREbmtUeExmckd6SGVvZVJSbElQbFl1bGNqTCt1S1RWQStCRVdpWTRjK2kwRStiamtUYmNBOUR0REx4UTQxUG9ib2xMaGJyLzRJdlJVdHQiLCJtYWMiOiJjMWQ5ODBjZjgxZDBmY2YxMWI3YzMyMTBhZjI3ZTNjNTA5MzQ5M2M0NTBlNGUyZDgyODI0Y2Q0ZjY5OWEzZjBiIiwidGFnIjoiIn0%3D; laravel_session=eyJpdiI6IlY3ejlVQ3p4bXh6eVBUc0pReU0yYUE9PSIsInZhbHVlIjoiU3doeHlCdUh4aStGTnQ3S0NHWEk5bHlUSnVMVSswdkxRKzc2eFQ4aUFWbXJOWkhuT1VkTTdFUTRJQSsxN1JhY0VEc0FmZEJnQUNUZ2UvNXJBZTdzVmcwVTc2UXhqSlJIRFdWTlAzRUpSNEVna2ZIVEJBVklZZmVIL1hvOFpNUngiLCJtYWMiOiJiM2Y1YzRlNzgwMTBmZmM2N2VhNzVjMjU0YmUyZTE1N2M2NDU2MmJkMmIyMzhmNDBkMGNmYjQ0N2RjMmI4NjdlIiwidGFnIjoiIn0%3D
+origin
+https://d312c64c-d1fb-450d-91ee-b46d533e6781-00-xib058mt2gtm.kirk.replit.dev
+referer
+https://d312c64c-d1fb-450d-91ee-b46d533e6781-00-xib058mt2gtm.kirk.replit.dev/pricing
+sec-ch-ua
+"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"macOS"
+sec-fetch-dest
+document
+sec-fetch-mode
+navigate
+sec-fetch-site
+same-origin
+sec-fetch-user
+?1
+upgrade-insecure-requests
+1
+x-forwarded-for
+73.24.152.123, 10.82.7.245
+x-forwarded-proto
+https
+x-replit-user-bio
+x-replit-user-id
+x-replit-user-name
+x-replit-user-profile-image
+x-replit-user-roles
+x-replit-user-teams
+x-replit-user-url
+Body
+{
+    "_token": "R8Yu4z9y6iLw1kgReIIKgjRUkGiSWNV8k0XrUjga",
+    "plan": "starter"
+}
+Application
+Routing
+controller
+App\Http\Controllers\SubscriptionController@checkout
+route name
+subscribe.checkout
+middleware
+web, auth
+Database Queries
+sqlite (0.4 ms)
+select * from "users" where "id" = 1 limit 1
