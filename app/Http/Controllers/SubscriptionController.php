@@ -22,8 +22,10 @@ class SubscriptionController extends Controller
             'onetime' => config('services.stripe.prices.onetime'),
         ];
         
+        \Log::info('Prices array', ['prices' => $prices]);
+        
         if (!isset($prices[$plan])) {
-            \Log::error('Invalid plan', ['plan' => $plan]);
+            \Log::error('Invalid plan', ['plan' => $plan, 'prices_keys' => array_keys($prices)]);
             return redirect()->route('pricing')->withErrors(['plan' => 'Invalid plan selected']);
         }
         
