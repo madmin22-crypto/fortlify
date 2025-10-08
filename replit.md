@@ -8,6 +8,8 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 **Last Updated**: October 8, 2025
 
 ## Recent Changes
+- **Oct 8, 2025**: Fixed HTTPS asset loading by forcing HTTPS scheme in AppServiceProvider
+- **Oct 8, 2025**: Moved Stripe price IDs to config/services.php for production cache safety
 - **Oct 8, 2025**: Completed Stripe checkout flow with SubscriptionController and billing portal
 - **Oct 8, 2025**: Updated pricing page with subscribe buttons for authenticated users
 - **Oct 8, 2025**: Created STRIPE_SETUP.md guide for product creation and webhook configuration
@@ -100,9 +102,11 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 - `app/Jobs/ProcessAudit.php` - Background job for async audit processing
 - `app/Http/Controllers/AuditController.php` - Audit submission, processing status, and results display
 - `app/Http/Controllers/DashboardController.php` - Authenticated dashboard with audit history
-- `app/Http/Controllers/SubscriptionController.php` - Stripe checkout and billing portal
+- `app/Http/Controllers/SubscriptionController.php` - Stripe checkout and billing portal (uses config for price IDs)
 - `app/Services/SeoAuditorService.php` - SEO crawler with SSRF protection, Lighthouse API integration, and recommendation engine
 - `app/Http/Controllers/MarketingController.php` - Public marketing pages
+- `app/Providers/AppServiceProvider.php` - Forces HTTPS scheme for asset URLs in production
+- `config/services.php` - Stripe price ID configuration for cache-safe access
 - `resources/views/audits/processing.blade.php` - Processing page with loading spinner
 - `resources/views/audits/show.blade.php` - Audit results page with prioritized recommendations
 - `resources/views/dashboard.blade.php` - Dashboard view with audit history and subscription status

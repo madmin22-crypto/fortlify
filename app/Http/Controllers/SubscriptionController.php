@@ -12,9 +12,9 @@ class SubscriptionController extends Controller
         $plan = $request->input('plan');
         
         $prices = [
-            'starter' => env('STRIPE_PRICE_STARTER'),
-            'growth' => env('STRIPE_PRICE_GROWTH'),
-            'onetime' => env('STRIPE_PRICE_ONETIME'),
+            'starter' => config('services.stripe.prices.starter'),
+            'growth' => config('services.stripe.prices.growth'),
+            'onetime' => config('services.stripe.prices.onetime'),
         ];
         
         if (!isset($prices[$plan])) {
