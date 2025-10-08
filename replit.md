@@ -3,11 +3,15 @@
 ## Overview
 Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conversion audits for small businesses. The platform focuses on simplicity and transparency with prioritized recommendations (Fix First / Next / Nice to Have), runs without third-party SEO subscriptions, and includes a working audit engine (crawler + Lighthouse), Stripe billing, and modular integrations.
 
-**Current Status**: Free Audit feature fully functional with async job queue processing, real Google Lighthouse scores, email capture, and comprehensive SSRF protection. SEO crawler, recommendation engine, and results display complete.
+**Current Status**: Free Audit feature fully functional with async job queue processing, real Google Lighthouse scores, email capture, and comprehensive SSRF protection. SEO crawler, recommendation engine, and results display complete. Stripe billing checkout flow implemented - ready for product setup.
 
-**Last Updated**: October 7, 2025
+**Last Updated**: October 8, 2025
 
 ## Recent Changes
+- **Oct 8, 2025**: Completed Stripe checkout flow with SubscriptionController and billing portal
+- **Oct 8, 2025**: Updated pricing page with subscribe buttons for authenticated users
+- **Oct 8, 2025**: Created STRIPE_SETUP.md guide for product creation and webhook configuration
+- **Oct 8, 2025**: Added subscription routes: /subscribe (POST) and /billing/portal
 - **Oct 7, 2025**: Implemented async Job Queue with ProcessAudit job for background audit processing
 - **Oct 7, 2025**: Created processing page with loading spinner and 3-second auto-refresh
 - **Oct 7, 2025**: Added Queue Worker workflow for continuous job processing (3 retries, 5-min timeout)
@@ -84,7 +88,9 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 /audits/{audit} - Audit results page
 /login - Breeze login
 /register - Breeze registration
-/dashboard - (To be built) Authenticated dashboard
+/dashboard - Authenticated dashboard with audit history
+/subscribe - POST - Stripe checkout (requires auth)
+/billing/portal - Stripe billing portal (requires auth)
 ```
 
 ### Key Files
@@ -93,13 +99,18 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 - `app/Models/Recommendation.php` - Recommendation model
 - `app/Jobs/ProcessAudit.php` - Background job for async audit processing
 - `app/Http/Controllers/AuditController.php` - Audit submission, processing status, and results display
+- `app/Http/Controllers/DashboardController.php` - Authenticated dashboard with audit history
+- `app/Http/Controllers/SubscriptionController.php` - Stripe checkout and billing portal
 - `app/Services/SeoAuditorService.php` - SEO crawler with SSRF protection, Lighthouse API integration, and recommendation engine
 - `app/Http/Controllers/MarketingController.php` - Public marketing pages
 - `resources/views/audits/processing.blade.php` - Processing page with loading spinner
 - `resources/views/audits/show.blade.php` - Audit results page with prioritized recommendations
+- `resources/views/dashboard.blade.php` - Dashboard view with audit history and subscription status
 - `resources/views/marketing/home.blade.php` - Home page with free audit form
+- `resources/views/marketing/pricing.blade.php` - Pricing page with subscribe buttons
 - `resources/views/components/layouts/marketing.blade.php` - Marketing layout
 - `routes/web.php` - Application routes
+- `STRIPE_SETUP.md` - Complete guide for Stripe product creation and webhook configuration
 - `.env.example` - Environment configuration template
 
 ### Pricing Tiers
@@ -173,23 +184,25 @@ The free audit feature allows users to submit any URL for SEO analysis without a
 - ✅ Database schema (workspaces, audits, recommendations)
 - ✅ Authentication (Laravel Breeze)
 - ✅ Stripe billing setup (Laravel Cashier)
+- ✅ Stripe checkout flow with SubscriptionController
+- ✅ Billing portal integration
+- ✅ Pricing page with dynamic subscribe buttons for authenticated users
+- ✅ Dashboard with audit history display
 
 ## Pending Backend Implementation
 - Contact form submission handler (will integrate with MailerLite)
 - Email delivery for audit results (email capture implemented, sending pending)
-- Dashboard authenticated routes
-- Stripe checkout and subscription management
+- Stripe product creation and price ID configuration (see STRIPE_SETUP.md)
 - Workspace switching and team management
 - Audit limits enforcement based on plan
 
 ## Next Steps (Priority Order)
-1. **App Dashboard**: Build authenticated dashboard UI showing audit history
-2. **Stripe Billing**: Complete checkout flow and subscription gates
-3. **Workspace Management**: Implement workspace switching and team member invitation
-4. **Audit Limits**: Enforce plan-based limits (1/month free, 10/month starter, unlimited growth)
-5. **Contact Form**: Implement backend handler for contact submissions
-6. **Email Delivery**: Send audit results via email when address is provided
-7. **Optional Integrations**: Google Search Console OAuth, SERP API
+1. **Stripe Product Setup**: Create products in Stripe Dashboard and add price IDs (see STRIPE_SETUP.md)
+2. **Workspace Management**: Implement workspace switching and team member invitation
+3. **Audit Limits**: Enforce plan-based limits (1/month free, 10/month starter, unlimited growth)
+4. **Contact Form**: Implement backend handler for contact submissions
+5. **Email Delivery**: Send audit results via email when address is provided
+6. **Optional Integrations**: Google Search Console OAuth, SERP API
 
 ## Environment Variables
 See `.env.example` for full configuration. Key variables:
@@ -208,6 +221,5 @@ See `.env.example` for full configuration. Key variables:
 
 ## Notes
 - Contact form has placeholder action (needs backend implementation)
-- Stripe integration configured but checkout flow not built
 - All authentication handled by Laravel Breeze (login, register, password reset, email verification)
 - Email capture implemented but actual email delivery pending (requires mail service like MailerLite)

@@ -88,9 +88,19 @@
                         <span class="ml-3 text-white">Email support</span>
                     </li>
                 </ul>
-                <a href="{{ route('register') }}" class="mt-8 block w-full bg-white text-indigo-600 rounded-md py-2 text-center font-medium hover:bg-gray-100">
-                    Start 14-day Trial
-                </a>
+                @auth
+                    <form action="{{ route('subscribe.checkout') }}" method="POST" class="mt-8">
+                        @csrf
+                        <input type="hidden" name="plan" value="starter">
+                        <button type="submit" class="block w-full bg-white text-indigo-600 rounded-md py-2 text-center font-medium hover:bg-gray-100">
+                            Subscribe Now
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('register') }}" class="mt-8 block w-full bg-white text-indigo-600 rounded-md py-2 text-center font-medium hover:bg-gray-100">
+                        Start 14-day Trial
+                    </a>
+                @endauth
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
@@ -132,9 +142,19 @@
                         <span class="ml-3 text-gray-700 dark:text-gray-300">Priority support</span>
                     </li>
                 </ul>
-                <a href="{{ route('register') }}" class="mt-8 block w-full bg-gray-800 dark:bg-gray-700 text-white rounded-md py-2 text-center font-medium hover:bg-gray-900 dark:hover:bg-gray-600">
-                    Start 14-day Trial
-                </a>
+                @auth
+                    <form action="{{ route('subscribe.checkout') }}" method="POST" class="mt-8">
+                        @csrf
+                        <input type="hidden" name="plan" value="growth">
+                        <button type="submit" class="block w-full bg-gray-800 dark:bg-gray-700 text-white rounded-md py-2 text-center font-medium hover:bg-gray-900 dark:hover:bg-gray-600">
+                            Subscribe Now
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('register') }}" class="mt-8 block w-full bg-gray-800 dark:bg-gray-700 text-white rounded-md py-2 text-center font-medium hover:bg-gray-900 dark:hover:bg-gray-600">
+                        Start 14-day Trial
+                    </a>
+                @endauth
             </div>
         </div>
     </div>
