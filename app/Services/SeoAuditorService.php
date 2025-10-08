@@ -166,6 +166,25 @@ class SeoAuditorService
                         continue;
                     }
                     
+                    if ($response->redirect()) {
+                        $redirectLocation = $response->header('Location');
+                        if ($redirectLocation) {
+                            $redirectUrl = $this->resolveRedirectUrl($redirectLocation, $currentUrl);
+                            
+                            $redirectHost = parse_url($redirectUrl, PHP_URL_HOST);
+                            if ($redirectHost) {
+                                $isSameDomain = ($redirectHost === $domain) || 
+                                              (str_ends_with($redirectHost, '.' . $domain)) ||
+                                              (str_ends_with($domain, '.' . $redirectHost));
+                                
+                                if ($isSameDomain && !in_array($redirectUrl, $visited) && !in_array($redirectUrl, $queue)) {
+                                    $queue[] = $redirectUrl;
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                    
                     if (!$response->successful()) {
                         continue;
                     }
@@ -222,7 +241,11 @@ class SeoAuditorService
             
             $linkDomain = parse_url($absoluteUrl, PHP_URL_HOST);
             
-            if ($linkDomain === $targetDomain) {
+            $isSameDomain = ($linkDomain === $targetDomain) || 
+                          (str_ends_with($linkDomain, '.' . $targetDomain)) ||
+                          (str_ends_with($targetDomain, '.' . $linkDomain));
+            
+            if ($isSameDomain) {
                 $links[] = $absoluteUrl;
             }
         }
@@ -594,7 +617,7 @@ class SeoAuditorService
 
     private function getPageSpeedScore(string $url, string $strategy, string $apiKey): ?int
     {
-        $response = Http::timeout(60)
+        $response = Http::timeout(20)
             ->get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed', [
                 'url' => $url,
                 'key' => $apiKey,
@@ -726,6 +749,17 @@ class SeoAuditorService
                     'effort_score' => $rec['effort_score'],
                 ]);
             }
+        }
+    }
+
+    private function resolveRedirectUrl(string $location, string $baseUrl): string
+    {
+        try {
+            $base = new \GuzzleHttp\Psr7\Uri($baseUrl);
+            $redirect = \GuzzleHttp\Psr7\UriResolver::resolve($base, new \GuzzleHttp\Psr7\Uri($location));
+            return (string) $redirect;
+        } catch (\Exception $e) {
+            return $baseUrl;
         }
     }
 }
