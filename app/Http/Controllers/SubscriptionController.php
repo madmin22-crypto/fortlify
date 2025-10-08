@@ -20,6 +20,12 @@ class SubscriptionController extends Controller
             return redirect()->route('pricing')->withErrors(['plan' => 'Invalid plan selected']);
         }
         
+        if (!$prices[$plan]) {
+            return redirect()->route('pricing')->withErrors([
+                'config' => 'Stripe billing is not configured yet. Please contact support or check back later.'
+            ]);
+        }
+        
         $user = Auth::user();
         
         return $user->newSubscription('default', $prices[$plan])

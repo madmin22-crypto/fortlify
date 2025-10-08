@@ -2,6 +2,25 @@
     <x-slot name="title">Pricing</x-slot>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        @if ($errors->any())
+            <div class="mb-8 rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+                <div class="flex">
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                            Unable to process subscription
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="text-center">
             <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl">
                 Simple, Transparent Pricing
