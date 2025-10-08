@@ -77,6 +77,22 @@
                 </div>
             </div>
 
+            @if($audit->metadata && isset($audit->metadata['pages_scanned']))
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <div class="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-center gap-2">
+                            <svg class="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-sm font-medium text-indigo-900 dark:text-indigo-100">
+                                Scanned <span class="font-bold">{{ $audit->metadata['pages_scanned'] }}</span> 
+                                {{ Str::plural('page', $audit->metadata['pages_scanned']) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if($audit->lighthouse_score_mobile || $audit->lighthouse_score_desktop)
                 <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lighthouse Performance Scores</h2>
@@ -142,6 +158,14 @@
                         <div class="space-y-4">
                             @foreach($recommendationsByPriority['fix_first'] as $rec)
                                 <div class="bg-white dark:bg-gray-800 border-l-4 border-red-500 shadow sm:rounded-lg p-6">
+                                    @if($rec->page_url)
+                                        <a href="{{ $rec->page_url }}" target="_blank" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2 inline-flex items-center gap-1">
+                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            {{ $rec->page_url }}
+                                        </a>
+                                    @endif
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ $rec->title }}</h3>
                                     <p class="text-gray-600 dark:text-gray-400 mb-3">{{ $rec->description }}</p>
                                     <div class="bg-gray-50 dark:bg-gray-900 rounded p-4">
@@ -164,6 +188,14 @@
                         <div class="space-y-4">
                             @foreach($recommendationsByPriority['next'] as $rec)
                                 <div class="bg-white dark:bg-gray-800 border-l-4 border-yellow-500 shadow sm:rounded-lg p-6">
+                                    @if($rec->page_url)
+                                        <a href="{{ $rec->page_url }}" target="_blank" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2 inline-flex items-center gap-1">
+                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            {{ $rec->page_url }}
+                                        </a>
+                                    @endif
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ $rec->title }}</h3>
                                     <p class="text-gray-600 dark:text-gray-400 mb-3">{{ $rec->description }}</p>
                                     <div class="bg-gray-50 dark:bg-gray-900 rounded p-4">
@@ -186,6 +218,14 @@
                         <div class="space-y-4">
                             @foreach($recommendationsByPriority['nice_to_have'] as $rec)
                                 <div class="bg-white dark:bg-gray-800 border-l-4 border-blue-500 shadow sm:rounded-lg p-6">
+                                    @if($rec->page_url)
+                                        <a href="{{ $rec->page_url }}" target="_blank" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2 inline-flex items-center gap-1">
+                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            {{ $rec->page_url }}
+                                        </a>
+                                    @endif
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ $rec->title }}</h3>
                                     <p class="text-gray-600 dark:text-gray-400 mb-3">{{ $rec->description }}</p>
                                     <div class="bg-gray-50 dark:bg-gray-900 rounded p-4">
