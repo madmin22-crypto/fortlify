@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Audit;
 use App\Models\Recommendation;
+use App\Models\PlanLimit;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -13,14 +15,44 @@ class SeoAuditorService
     {
         $audit->update(['status' => 'processing']);
 
+        $workspace = null;
+        $reservedPages = 0;
+        $pagesScanned = 0;
+        
         try {
-            $crawlData = $this->crawlWebsite($audit->url);
+            $workspace = $audit->workspace;
+            $planLimit = $this->getPageLimit($workspace);
+            $remainingPages = $planLimit;
+            
+            if ($workspace) {
+                DB::transaction(function () use ($workspace, $planLimit, &$remainingPages, &$reservedPages) {
+                    $lockedWorkspace = $workspace->lockForUpdate()->find($workspace->id);
+                    
+                    $this->resetMonthlyLimitIfNeeded($lockedWorkspace);
+                    
+                    $remainingPages = max($planLimit - $lockedWorkspace->pages_scanned_this_month, 0);
+                    
+                    if ($remainingPages <= 0) {
+                        throw new \Exception("Page limit exceeded for this month");
+                    }
+                    
+                    $reservedPages = $remainingPages;
+                    $lockedWorkspace->increment('pages_scanned_this_month', $reservedPages);
+                });
+            }
+            
+            $multiPageData = $this->crawlMultiplePages($audit->url, $remainingPages);
+            $crawlData = $multiPageData['aggregated_data'];
+            $pagesScanned = $multiPageData['pages_scanned'];
             
             $lighthouseData = $this->getLighthouseScores($audit->url);
 
             $audit->update([
                 'status' => 'completed',
-                'metadata' => array_merge($crawlData, $lighthouseData),
+                'metadata' => array_merge($crawlData, $lighthouseData, [
+                    'pages_scanned' => $pagesScanned,
+                    'pages_crawled' => $multiPageData['pages_crawled'],
+                ]),
                 'lighthouse_score_mobile' => $lighthouseData['mobile_score'] ?? null,
                 'lighthouse_score_desktop' => $lighthouseData['desktop_score'] ?? null,
                 'completed_at' => now(),
@@ -39,6 +71,140 @@ class SeoAuditorService
             ]);
             
             throw $e;
+        } finally {
+            if ($workspace && $reservedPages > 0 && $pagesScanned < $reservedPages) {
+                $workspace->decrement('pages_scanned_this_month', $reservedPages - $pagesScanned);
+            }
+        }
+    }
+
+    private function getPageLimit($workspace): int
+    {
+        if (!$workspace) {
+            return 10;
+        }
+
+        $planName = $workspace->stripe_price ?? 'free';
+        
+        $priceIdMap = [
+            config('services.stripe.prices.starter') => 'starter',
+            config('services.stripe.prices.growth') => 'growth',
+            config('services.stripe.prices.onetime') => 'onetime',
+        ];
+        
+        $plan = $priceIdMap[$planName] ?? 'free';
+        
+        $planLimit = PlanLimit::where('plan_name', $plan)->first();
+        
+        return $planLimit ? $planLimit->pages_per_month : 10;
+    }
+
+    private function crawlMultiplePages(string $startUrl, int $limit): array
+    {
+        $domain = parse_url($startUrl, PHP_URL_HOST);
+        $scheme = parse_url($startUrl, PHP_URL_SCHEME);
+        
+        $queue = [$startUrl];
+        $visited = [];
+        $aggregatedData = [];
+        $pagesCrawled = [];
+        
+        while (!empty($queue) && count($visited) < $limit) {
+            $currentUrl = array_shift($queue);
+            
+            if (in_array($currentUrl, $visited)) {
+                continue;
+            }
+            
+            $visited[] = $currentUrl;
+            
+            try {
+                $pageData = $this->crawlWebsite($currentUrl);
+                $pagesCrawled[] = $currentUrl;
+                
+                $aggregatedData = $this->aggregatePageData($aggregatedData, $pageData);
+                
+                if (count($visited) < $limit) {
+                    $links = $this->extractLinks($pageData['html'] ?? '', $currentUrl, $domain, $scheme);
+                    foreach ($links as $link) {
+                        if (!in_array($link, $visited) && !in_array($link, $queue)) {
+                            $queue[] = $link;
+                        }
+                    }
+                }
+                
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+        
+        return [
+            'aggregated_data' => $aggregatedData,
+            'pages_scanned' => count($visited),
+            'pages_crawled' => $pagesCrawled,
+        ];
+    }
+
+    private function extractLinks(string $html, string $baseUrl, string $targetDomain, string $targetScheme): array
+    {
+        preg_match_all('/<a\s+(?:[^>]*?\s+)?href=(["\'])(.*?)\1/is', $html, $matches);
+        
+        $links = [];
+        foreach ($matches[2] ?? [] as $href) {
+            $href = trim($href);
+            
+            if (empty($href) || str_starts_with($href, '#') || str_starts_with($href, 'mailto:') || str_starts_with($href, 'tel:')) {
+                continue;
+            }
+            
+            if (str_starts_with($href, '/')) {
+                $absoluteUrl = $targetScheme . '://' . $targetDomain . $href;
+            } elseif (!str_starts_with($href, 'http')) {
+                $absoluteUrl = rtrim($baseUrl, '/') . '/' . ltrim($href, '/');
+            } else {
+                $absoluteUrl = $href;
+            }
+            
+            $linkDomain = parse_url($absoluteUrl, PHP_URL_HOST);
+            
+            if ($linkDomain === $targetDomain) {
+                $links[] = $absoluteUrl;
+            }
+        }
+        
+        return array_unique($links);
+    }
+
+    private function aggregatePageData(array $existing, array $newData): array
+    {
+        if (empty($existing)) {
+            $result = $newData;
+            unset($result['html']);
+            return $result;
+        }
+        
+        return [
+            'url' => $existing['url'],
+            'title' => $existing['title'] ?? $newData['title'],
+            'meta_description' => $existing['meta_description'] ?? $newData['meta_description'],
+            'h1_tags' => array_merge($existing['h1_tags'] ?? [], $newData['h1_tags'] ?? []),
+            'h2_tags' => array_merge($existing['h2_tags'] ?? [], $newData['h2_tags'] ?? []),
+            'canonical_url' => $existing['canonical_url'] ?? $newData['canonical_url'],
+            'meta_robots' => $existing['meta_robots'] ?? $newData['meta_robots'],
+            'og_tags' => array_merge($existing['og_tags'] ?? [], $newData['og_tags'] ?? []),
+            'images_without_alt' => ($existing['images_without_alt'] ?? 0) + ($newData['images_without_alt'] ?? 0),
+            'internal_links' => ($existing['internal_links'] ?? 0) + ($newData['internal_links'] ?? 0),
+            'external_links' => ($existing['external_links'] ?? 0) + ($newData['external_links'] ?? 0),
+        ];
+    }
+
+    private function resetMonthlyLimitIfNeeded($workspace): void
+    {
+        if (!$workspace->last_reset_at || $workspace->last_reset_at->diffInMonths(now()) >= 1) {
+            $workspace->update([
+                'pages_scanned_this_month' => 0,
+                'last_reset_at' => now(),
+            ]);
         }
     }
 
@@ -263,6 +429,7 @@ class SeoAuditorService
     {
         $data = [
             'url' => $url,
+            'html' => $html,
             'title' => $this->extractTitle($html),
             'meta_description' => $this->extractMetaDescription($html),
             'h1_tags' => $this->extractH1Tags($html),

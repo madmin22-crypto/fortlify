@@ -8,12 +8,56 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Page Usage This Month</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $pagesUsed }} of {{ $pageLimit }} pages scanned</p>
+                        </div>
+                        @if(!$subscription)
+                        <a href="{{ route('pricing') }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                            Upgrade Plan →
+                        </a>
+                        @else
+                        <a href="{{ route('billing.portal') }}" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                            Manage Billing →
+                        </a>
+                        @endif
+                    </div>
+                    
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        @php
+                            $percentage = $pageLimit > 0 ? min(($pagesUsed / $pageLimit) * 100, 100) : 0;
+                            $color = $percentage >= 90 ? 'bg-red-500' : ($percentage >= 70 ? 'bg-yellow-500' : 'bg-green-500');
+                        @endphp
+                        <div class="{{ $color }} h-3 transition-all duration-300" style="width: {{ $percentage }}%"></div>
+                    </div>
+                    
+                    @if($pagesUsed >= $pageLimit)
+                    <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-sm text-red-800">
+                            <strong>Limit reached!</strong> You've used all {{ $pageLimit }} pages this month. 
+                            <a href="{{ route('pricing') }}" class="underline hover:text-red-900">Upgrade your plan</a> to continue scanning.
+                        </p>
+                    </div>
+                    @elseif($pagesUsed >= $pageLimit * 0.8)
+                    <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800">
+                            <strong>Almost at limit!</strong> You've used {{ $pagesUsed }} of {{ $pageLimit }} pages. 
+                            Consider <a href="{{ route('pricing') }}" class="underline hover:text-yellow-900">upgrading</a> for more capacity.
+                        </p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
             @if(!$subscription)
             <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-2xl font-bold mb-2">Upgrade to unlock unlimited audits</h3>
-                        <p class="text-indigo-100">You're on the Free plan (1 audit/month). Upgrade to Starter or Growth for more audits and features.</p>
+                        <h3 class="text-2xl font-bold mb-2">Unlock More Pages</h3>
+                        <p class="text-indigo-100">You're on the Free plan ({{ $pageLimit }} pages/month). Upgrade to Starter (200 pages) or Growth (500 pages) for deeper site analysis.</p>
                     </div>
                     <a href="{{ route('pricing') }}" class="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition">
                         View Plans
