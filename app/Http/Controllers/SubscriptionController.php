@@ -17,7 +17,10 @@ class SubscriptionController extends Controller
             'onetime' => config('services.stripe.prices.onetime'),
         ];
         
+        \Log::info('Checkout attempt', ['plan' => $plan, 'prices' => $prices]);
+        
         if (!isset($prices[$plan])) {
+            \Log::error('Plan not in array', ['plan' => $plan, 'available' => array_keys($prices)]);
             return redirect()->route('pricing')->withErrors(['plan' => 'Invalid plan selected']);
         }
         
