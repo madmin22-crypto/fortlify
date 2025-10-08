@@ -9,6 +9,7 @@ class Recommendation extends Model
 {
     protected $fillable = [
         'audit_id',
+        'page_url',
         'category',
         'priority',
         'impact_score',

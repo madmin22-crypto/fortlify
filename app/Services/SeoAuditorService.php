@@ -42,14 +42,14 @@ class SeoAuditorService
             }
             
             $multiPageData = $this->crawlMultiplePages($audit->url, $remainingPages);
-            $crawlData = $multiPageData['aggregated_data'];
+            $pagesData = $multiPageData['pages_data'];
             $pagesScanned = $multiPageData['pages_scanned'];
             
             $lighthouseData = $this->getLighthouseScores($audit->url);
 
             $audit->update([
                 'status' => 'completed',
-                'metadata' => array_merge($crawlData, $lighthouseData, [
+                'metadata' => array_merge($lighthouseData, [
                     'pages_scanned' => $pagesScanned,
                     'pages_crawled' => $multiPageData['pages_crawled'],
                 ]),
@@ -58,7 +58,7 @@ class SeoAuditorService
                 'completed_at' => now(),
             ]);
 
-            $this->generateRecommendations($audit, $crawlData);
+            $this->generateRecommendations($audit, $pagesData);
 
             $audit->update([
                 'score' => $audit->fresh()->calculateSeoScore(),
@@ -106,7 +106,7 @@ class SeoAuditorService
         
         $queue = [$startUrl];
         $visited = [];
-        $aggregatedData = [];
+        $pagesData = [];
         $pagesCrawled = [];
         
         while (!empty($queue) && count($visited) < $limit) {
@@ -122,7 +122,9 @@ class SeoAuditorService
                 $pageData = $this->crawlWebsite($currentUrl);
                 $pagesCrawled[] = $currentUrl;
                 
-                $aggregatedData = $this->aggregatePageData($aggregatedData, $pageData);
+                $pageDataClean = $pageData;
+                unset($pageDataClean['html']);
+                $pagesData[] = $pageDataClean;
                 
                 if (count($visited) < $limit) {
                     $links = $this->extractLinks($pageData['html'] ?? '', $currentUrl, $domain, $scheme);
@@ -139,7 +141,7 @@ class SeoAuditorService
         }
         
         return [
-            'aggregated_data' => $aggregatedData,
+            'pages_data' => $pagesData,
             'pages_scanned' => count($visited),
             'pages_crawled' => $pagesCrawled,
         ];
@@ -585,111 +587,115 @@ class SeoAuditorService
         return (int) round($score * 100);
     }
 
-    private function generateRecommendations(Audit $audit, array $crawlData): void
+    private function generateRecommendations(Audit $audit, array $pagesData): void
     {
-        $recommendations = [];
+        foreach ($pagesData as $pageData) {
+            $pageUrl = $pageData['url'];
+            $recommendations = [];
 
-        if (empty($crawlData['title'])) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'fix_first',
-                'title' => 'Missing Title Tag',
-                'description' => 'Your page is missing a title tag. This is critical for SEO.',
-                'how_to_fix' => 'Add a <title> tag in the <head> section with a descriptive, keyword-rich title (50-60 characters).',
-                'impact_score' => 10,
-                'effort_score' => 2,
-            ];
-        } elseif (strlen($crawlData['title']) > 60) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'next',
-                'title' => 'Title Tag Too Long',
-                'description' => 'Your title tag is ' . strlen($crawlData['title']) . ' characters. Google typically displays the first 50-60 characters.',
-                'how_to_fix' => 'Shorten your title tag to 50-60 characters while keeping it descriptive.',
-                'impact_score' => 7,
-                'effort_score' => 2,
-            ];
-        }
+            if (empty($pageData['title'])) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'fix_first',
+                    'title' => 'Missing Title Tag',
+                    'description' => 'This page is missing a title tag. This is critical for SEO.',
+                    'how_to_fix' => 'Add a <title> tag in the <head> section with a descriptive, keyword-rich title (50-60 characters).',
+                    'impact_score' => 10,
+                    'effort_score' => 2,
+                ];
+            } elseif (strlen($pageData['title']) > 60) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'next',
+                    'title' => 'Title Tag Too Long',
+                    'description' => 'The title tag is ' . strlen($pageData['title']) . ' characters. Google typically displays the first 50-60 characters.',
+                    'how_to_fix' => 'Shorten the title tag to 50-60 characters while keeping it descriptive.',
+                    'impact_score' => 7,
+                    'effort_score' => 2,
+                ];
+            }
 
-        if (empty($crawlData['meta_description'])) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'fix_first',
-                'title' => 'Missing Meta Description',
-                'description' => 'Your page is missing a meta description. This affects click-through rates from search results.',
-                'how_to_fix' => 'Add a <meta name="description"> tag with a compelling summary of your page (150-160 characters).',
-                'impact_score' => 9,
-                'effort_score' => 2,
-            ];
-        } elseif (strlen($crawlData['meta_description']) > 160) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'next',
-                'title' => 'Meta Description Too Long',
-                'description' => 'Your meta description is ' . strlen($crawlData['meta_description']) . ' characters. Google typically displays 150-160 characters.',
-                'how_to_fix' => 'Shorten your meta description to 150-160 characters.',
-                'impact_score' => 6,
-                'effort_score' => 2,
-            ];
-        }
+            if (empty($pageData['meta_description'])) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'fix_first',
+                    'title' => 'Missing Meta Description',
+                    'description' => 'This page is missing a meta description. This affects click-through rates from search results.',
+                    'how_to_fix' => 'Add a <meta name="description"> tag with a compelling summary of the page (150-160 characters).',
+                    'impact_score' => 9,
+                    'effort_score' => 2,
+                ];
+            } elseif (strlen($pageData['meta_description']) > 160) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'next',
+                    'title' => 'Meta Description Too Long',
+                    'description' => 'The meta description is ' . strlen($pageData['meta_description']) . ' characters. Google typically displays 150-160 characters.',
+                    'how_to_fix' => 'Shorten the meta description to 150-160 characters.',
+                    'impact_score' => 6,
+                    'effort_score' => 2,
+                ];
+            }
 
-        if (count($crawlData['h1_tags']) === 0) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'fix_first',
-                'title' => 'Missing H1 Tag',
-                'description' => 'Your page has no H1 tag. H1 tags help search engines understand your page content.',
-                'how_to_fix' => 'Add one H1 tag that clearly describes the main topic of your page.',
-                'impact_score' => 8,
-                'effort_score' => 1,
-            ];
-        } elseif (count($crawlData['h1_tags']) > 1) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'next',
-                'title' => 'Multiple H1 Tags',
-                'description' => 'Your page has ' . count($crawlData['h1_tags']) . ' H1 tags. Best practice is to have only one H1 per page.',
-                'how_to_fix' => 'Use only one H1 tag for the main heading. Use H2, H3, etc. for subheadings.',
-                'impact_score' => 5,
-                'effort_score' => 3,
-            ];
-        }
+            if (count($pageData['h1_tags']) === 0) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'fix_first',
+                    'title' => 'Missing H1 Tag',
+                    'description' => 'This page has no H1 tag. H1 tags help search engines understand page content.',
+                    'how_to_fix' => 'Add one H1 tag that clearly describes the main topic of the page.',
+                    'impact_score' => 8,
+                    'effort_score' => 1,
+                ];
+            } elseif (count($pageData['h1_tags']) > 1) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'next',
+                    'title' => 'Multiple H1 Tags',
+                    'description' => 'This page has ' . count($pageData['h1_tags']) . ' H1 tags. Best practice is to have only one H1 per page.',
+                    'how_to_fix' => 'Use only one H1 tag for the main heading. Use H2, H3, etc. for subheadings.',
+                    'impact_score' => 5,
+                    'effort_score' => 3,
+                ];
+            }
 
-        if (empty($crawlData['canonical_url'])) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'nice_to_have',
-                'title' => 'Missing Canonical URL',
-                'description' => 'Your page is missing a canonical URL. This helps prevent duplicate content issues.',
-                'how_to_fix' => 'Add a <link rel="canonical" href="..."> tag pointing to the preferred version of this page.',
-                'impact_score' => 4,
-                'effort_score' => 2,
-            ];
-        }
+            if (empty($pageData['canonical_url'])) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'nice_to_have',
+                    'title' => 'Missing Canonical URL',
+                    'description' => 'This page is missing a canonical URL. This helps prevent duplicate content issues.',
+                    'how_to_fix' => 'Add a <link rel="canonical" href="..."> tag pointing to the preferred version of this page.',
+                    'impact_score' => 4,
+                    'effort_score' => 2,
+                ];
+            }
 
-        if ($crawlData['images_without_alt'] > 0) {
-            $recommendations[] = [
-                'category' => 'seo',
-                'priority' => 'next',
-                'title' => 'Images Missing Alt Text',
-                'description' => $crawlData['images_without_alt'] . ' images are missing alt attributes. This hurts SEO and accessibility.',
-                'how_to_fix' => 'Add descriptive alt text to all images. Alt text helps search engines understand image content.',
-                'impact_score' => 6,
-                'effort_score' => 5,
-            ];
-        }
+            if (($pageData['images_without_alt'] ?? 0) > 0) {
+                $recommendations[] = [
+                    'category' => 'seo',
+                    'priority' => 'next',
+                    'title' => 'Images Missing Alt Text',
+                    'description' => $pageData['images_without_alt'] . ' images are missing alt attributes. This hurts SEO and accessibility.',
+                    'how_to_fix' => 'Add descriptive alt text to all images. Alt text helps search engines understand image content.',
+                    'impact_score' => 6,
+                    'effort_score' => 5,
+                ];
+            }
 
-        foreach ($recommendations as $rec) {
-            Recommendation::create([
-                'audit_id' => $audit->id,
-                'category' => $rec['category'],
-                'priority' => $rec['priority'],
-                'title' => $rec['title'],
-                'description' => $rec['description'],
-                'how_to_fix' => $rec['how_to_fix'],
-                'impact_score' => $rec['impact_score'],
-                'effort_score' => $rec['effort_score'],
-            ]);
+            foreach ($recommendations as $rec) {
+                Recommendation::create([
+                    'audit_id' => $audit->id,
+                    'page_url' => $pageUrl,
+                    'category' => $rec['category'],
+                    'priority' => $rec['priority'],
+                    'title' => $rec['title'],
+                    'description' => $rec['description'],
+                    'how_to_fix' => $rec['how_to_fix'],
+                    'impact_score' => $rec['impact_score'],
+                    'effort_score' => $rec['effort_score'],
+                ]);
+            }
         }
     }
 }
