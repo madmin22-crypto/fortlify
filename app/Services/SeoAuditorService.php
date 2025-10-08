@@ -177,29 +177,6 @@ class SeoAuditorService
         return array_unique($links);
     }
 
-    private function aggregatePageData(array $existing, array $newData): array
-    {
-        if (empty($existing)) {
-            $result = $newData;
-            unset($result['html']);
-            return $result;
-        }
-        
-        return [
-            'url' => $existing['url'],
-            'title' => $existing['title'] ?? $newData['title'],
-            'meta_description' => $existing['meta_description'] ?? $newData['meta_description'],
-            'h1_tags' => array_merge($existing['h1_tags'] ?? [], $newData['h1_tags'] ?? []),
-            'h2_tags' => array_merge($existing['h2_tags'] ?? [], $newData['h2_tags'] ?? []),
-            'canonical_url' => $existing['canonical_url'] ?? $newData['canonical_url'],
-            'meta_robots' => $existing['meta_robots'] ?? $newData['meta_robots'],
-            'og_tags' => array_merge($existing['og_tags'] ?? [], $newData['og_tags'] ?? []),
-            'images_without_alt' => ($existing['images_without_alt'] ?? 0) + ($newData['images_without_alt'] ?? 0),
-            'internal_links' => ($existing['internal_links'] ?? 0) + ($newData['internal_links'] ?? 0),
-            'external_links' => ($existing['external_links'] ?? 0) + ($newData['external_links'] ?? 0),
-        ];
-    }
-
     private function resetMonthlyLimitIfNeeded($workspace): void
     {
         if (!$workspace->last_reset_at || $workspace->last_reset_at->diffInMonths(now()) >= 1) {
