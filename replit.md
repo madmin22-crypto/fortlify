@@ -115,8 +115,9 @@ Fortlify is a Laravel 11-based SaaS that delivers clear, actionable SEO and conv
 
 ### Pricing Tiers
 1. **Free**: $0/month - 1 audit/month, all SEO checks, Lighthouse scores, prioritized recommendations
-2. **Starter**: $29/month - 10 audits/month, everything in Free
+2. **Starter**: $29/month - 10 audits/month, everything in Free, team collaboration, email support
 3. **Growth**: $79/month - Unlimited audits, Google Search Console integration, keyword ranking snapshots, priority support
+4. **One-Time Audit**: $24 one-time - 1 complete audit, all SEO checks, Lighthouse scores, no recurring charges
 
 ## Architecture Decisions
 - **SQLite for development**: Fast setup, zero config, easy migrations

@@ -14,6 +14,7 @@ class SubscriptionController extends Controller
         $prices = [
             'starter' => env('STRIPE_PRICE_STARTER'),
             'growth' => env('STRIPE_PRICE_GROWTH'),
+            'onetime' => env('STRIPE_PRICE_ONETIME'),
         ];
         
         if (!isset($prices[$plan])) {
@@ -28,6 +29,15 @@ class SubscriptionController extends Controller
         
         $user = Auth::user();
         
+        // Handle one-time payment differently
+        if ($plan === 'onetime') {
+            return $user->checkout([$prices[$plan] => 1], [
+                'success_url' => route('dashboard') . '?checkout=success',
+                'cancel_url' => route('pricing'),
+            ]);
+        }
+        
+        // Handle recurring subscriptions
         return $user->newSubscription('default', $prices[$plan])
             ->checkout([
                 'success_url' => route('dashboard') . '?checkout=success',

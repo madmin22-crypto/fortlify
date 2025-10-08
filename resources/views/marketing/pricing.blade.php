@@ -30,7 +30,7 @@
             </p>
         </div>
 
-        <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
                 <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Free</h3>
                 <p class="mt-4 text-gray-600 dark:text-gray-400">Perfect for trying out Fortlify</p>
@@ -172,6 +172,54 @@
                 @else
                     <a href="{{ route('register') }}" class="mt-8 block w-full bg-gray-800 dark:bg-gray-700 text-white rounded-md py-2 text-center font-medium hover:bg-gray-900 dark:hover:bg-gray-600">
                         Start 14-day Trial
+                    </a>
+                @endauth
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border-2 border-indigo-200 dark:border-indigo-700">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">One-Time Audit</h3>
+                <p class="mt-4 text-gray-600 dark:text-gray-400">Pay once, get one audit</p>
+                <p class="mt-8">
+                    <span class="text-4xl font-extrabold text-gray-900 dark:text-white">$24</span>
+                    <span class="text-base font-medium text-gray-500 dark:text-gray-400">one-time</span>
+                </p>
+                <ul class="mt-8 space-y-4">
+                    <li class="flex items-start">
+                        <svg class="flex-shrink-0 h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="ml-3 text-gray-700 dark:text-gray-300">1 complete SEO audit</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="flex-shrink-0 h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="ml-3 text-gray-700 dark:text-gray-300">All SEO checks included</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="flex-shrink-0 h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="ml-3 text-gray-700 dark:text-gray-300">Lighthouse performance scores</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="flex-shrink-0 h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="ml-3 text-gray-700 dark:text-gray-300">No recurring charges</span>
+                    </li>
+                </ul>
+                @auth
+                    <form action="{{ route('subscribe.checkout') }}" method="POST" class="mt-8">
+                        @csrf
+                        <input type="hidden" name="plan" value="onetime">
+                        <button type="submit" class="block w-full bg-indigo-600 text-white rounded-md py-2 text-center font-medium hover:bg-indigo-700">
+                            Buy Now
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('register') }}" class="mt-8 block w-full bg-indigo-600 text-white rounded-md py-2 text-center font-medium hover:bg-indigo-700">
+                        Buy Now
                     </a>
                 @endauth
             </div>
