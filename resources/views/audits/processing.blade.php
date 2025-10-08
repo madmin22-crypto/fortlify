@@ -30,25 +30,25 @@
                         <h3 class="font-semibold text-indigo-900 mb-3">What We're Checking:</h3>
                         <ul class="text-left text-sm text-indigo-700 space-y-2">
                             <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="h-4 w-4 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                                 <span>Technical SEO (title tags, meta descriptions, canonical tags)</span>
                             </li>
                             <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="h-4 w-4 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                                 <span>Page structure and content hierarchy</span>
                             </li>
                             <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="h-4 w-4 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                                 <span>Mobile & desktop performance with Google Lighthouse</span>
                             </li>
                             <li class="flex items-start">
-                                <svg class="h-5 w-5 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="h-4 w-4 mr-2 flex-shrink-0 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                 </svg>
                                 <span>Image optimization and link structure</span>
