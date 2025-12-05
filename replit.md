@@ -26,7 +26,9 @@ Fortlify is a Laravel 11 SaaS platform providing clear, actionable SEO and conve
 - **Component-based Blade views**: Utilizes reusable marketing layouts with consistent navigation and footers for a unified design.
 
 ### Core Features & Implementations
-- **Page-Based Limiting System**: Audits scan multiple pages within the same domain based on plan limits (e.g., Free: 10, Starter: 200, Growth: 500 pages/month). Implemented with atomic page reservation using database locking to prevent race conditions, and a monthly reset logic.
+- **Page-Based Limiting System**: Audits scan multiple pages within the same domain based on plan limits (Free: 1, Starter: 200, Growth: 500 pages/month). Implemented with atomic page reservation using database locking to prevent race conditions, and a monthly reset logic.
+- **Email Verification Requirement**: Free tier requires email verification before running audits. User model implements MustVerifyEmail, and audit creation routes use 'auth' and 'verified' middleware.
+- **Branding**: Fortlify logo ("Build Strong. Rank Faster.") displayed in marketing and dashboard navigation headers.
 - **Multi-Page Crawler**: Breadth-first traversal with parallel HTTP requests using Laravel's Http::pool(). Processes up to 5 pages concurrently per batch for 7-8x speed improvement (10 pages in ~8 seconds). Features safe redirect handling using Guzzle's RFC 3986-compliant URI resolver, flexible domain matching (handles www variations), and extracts links filtering to same domain only. Crawls up to the remaining page allowance. All SSRF protections maintained with validateUrl() and DNS pinning for each pooled request.
 - **Asynchronous Audit Processing**: Utilizes Laravel's Job Queue with `ProcessAudit` jobs for background processing, ensuring a responsive user interface.
 - **SEO Audit Engine**:
