@@ -18,8 +18,8 @@
                 <div class="flex justify-between h-16">
                     <div class="flex">
                         <div class="flex-shrink-0 flex items-center">
-                            <a href="{{ route('home') }}" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                                Fortlify
+                            <a href="{{ route('home') }}">
+                                <img src="/images/fortlify-logo.png" alt="Fortlify - Build Strong. Rank Faster." class="h-10 w-auto">
                             </a>
                         </div>
                         <div class="hidden sm:ml-10 sm:flex sm:space-x-8">
@@ -57,7 +57,7 @@
             <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div class="col-span-1">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Fortlify</h3>
+                        <img src="/images/fortlify-logo.png" alt="Fortlify" class="h-8 w-auto mb-4">
                         <p class="text-sm text-gray-600 dark:text-gray-400">Clear, actionable SEO and conversion audits for small businesses.</p>
                     </div>
                     <div>

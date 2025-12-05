@@ -14,7 +14,7 @@ Route::get('/privacy', [MarketingController::class, 'privacy'])->name('privacy')
 Route::get('/terms', [MarketingController::class, 'terms'])->name('terms');
 Route::get('/contact', [MarketingController::class, 'contact'])->name('contact');
 
-Route::post('/audits', [AuditController::class, 'store'])->name('audits.store');
+Route::post('/audits', [AuditController::class, 'store'])->middleware(['auth', 'verified'])->name('audits.store');
 Route::get('/audits/{audit}/processing', [AuditController::class, 'processing'])->name('audits.processing');
 Route::get('/audits/{audit}', [AuditController::class, 'show'])->name('audits.show');
 
