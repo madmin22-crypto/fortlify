@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <img src="/images/fortlify-logo.png" alt="Fortlify" class="h-9 w-auto">
+                        <img src="/images/fortlify-logo.png" alt="Fortlify" class="w-[200px] h-auto">
                     </a>
                 </div>
 
