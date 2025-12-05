@@ -81,7 +81,8 @@ class SeoAuditorService
     private function getPageLimit($workspace): int
     {
         if (!$workspace) {
-            return 10;
+            $planLimit = PlanLimit::where('plan_name', 'free')->first();
+            return $planLimit ? $planLimit->pages_per_month : 1;
         }
 
         $planName = $workspace->stripe_price ?? 'free';
@@ -96,7 +97,7 @@ class SeoAuditorService
         
         $planLimit = PlanLimit::where('plan_name', $plan)->first();
         
-        return $planLimit ? $planLimit->pages_per_month : 10;
+        return $planLimit ? $planLimit->pages_per_month : 1;
     }
 
     private function crawlMultiplePages(string $startUrl, int $limit): array
