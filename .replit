@@ -3,7 +3,6 @@ modules = ["php-8.2", "nodejs-20", "postgresql-16"]
 expertMode = true
 
 [workflows]
-runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
