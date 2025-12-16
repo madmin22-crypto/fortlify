@@ -16,6 +16,7 @@ WORKDIR /app
 COPY . .
 
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN php artisan config:clear
 
 # Railway needs this metadata
 EXPOSE 8080
