@@ -22,3 +22,6 @@ EXPOSE 8080
 
 # Single PID HTTP server (Railway-safe)
 CMD php -S 0.0.0.0:${PORT} -t public
+
+RUN mkdir -p database \
+ && touch database/database.sqlite
