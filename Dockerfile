@@ -1,6 +1,6 @@
-FROM php:8.3-fpm
+FROM php:8.2-cli
 
-# Install system dependencies
+# System dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
@@ -9,15 +9,16 @@ RUN apt-get update && apt-get install -y \
     curl \
     && docker-php-ext-install pdo pdo_mysql bcmath
 
-# Install Composer (official method)
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-
 COPY . .
 
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
+# Railway needs this metadata
 EXPOSE 8080
 
+# Single PID HTTP server (Railway-safe)
 CMD php -S 0.0.0.0:${PORT} -t public
