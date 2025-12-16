@@ -10,7 +10,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css">
     </head>
     <body class="font-sans antialiased bg-white dark:bg-gray-900">
         <nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
