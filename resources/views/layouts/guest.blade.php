@@ -4,6 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        @if(isAppContext())
+        <meta name="robots" content="noindex, nofollow">
+        @endif
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -18,9 +21,15 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
             <div>
                 <a href="/">
-                    <x-application-logo class="w-12 h-12 fill-current text-gray-500" />
+                    <img src="/images/fortlify-logo.png" alt="Fortlify" class="w-[150px] h-auto">
                 </a>
             </div>
+
+            @if(isAppContext())
+            <div class="mt-4 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-full">
+                Private Beta
+            </div>
+            @endif
 
             <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
                 {{ $slot }}

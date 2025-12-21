@@ -18,6 +18,15 @@ Fortlify is a Laravel 11 SaaS platform providing clear, actionable SEO and conve
 - **Database**: SQLite (dev), production-ready for MySQL/PostgreSQL
 - **Billing**: Laravel Cashier + Stripe
 
+### Domain-Aware Routing Architecture
+- **Marketing Context** (fortlify.com): Public-facing pages for marketing and lead generation
+- **App Context** (app.fortlify.com): Private beta dashboard requiring authentication
+- **Implementation**: Uses `DomainHelper` class with `isAppContext()` and `isMarketingContext()` helpers for runtime context detection
+- **Middleware**: `EnsureAppContext` and `EnsureMarketingContext` middleware enforce domain-specific route access, registered as aliases in `bootstrap/app.php`
+- **HomeController**: Unified controller handles `/` route, serving marketing home or redirecting to dashboard based on context
+- **Registration Restriction**: Registration routes only available in marketing context (invite-only private beta on app subdomain)
+- **SEO Protection**: App context includes noindex meta tags to prevent search engine indexing
+
 ### UI/UX Decisions
 - **Marketing Website**: Comprehensive public-facing pages (Home, Pricing, How It Works, Privacy, Terms, Contact)
 - **Authenticated Dashboard**: Displays audit history, subscription status, and page usage with a progress bar and warnings.

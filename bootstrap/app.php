@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'app.context' => \App\Http\Middleware\EnsureAppContext::class,
+            'marketing.context' => \App\Http\Middleware\EnsureMarketingContext::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
