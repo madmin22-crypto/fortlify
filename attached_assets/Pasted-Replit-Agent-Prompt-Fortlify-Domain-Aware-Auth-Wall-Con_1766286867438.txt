@@ -1,0 +1,58 @@
+Replit Agent Prompt (Fortlify Domain-Aware Auth Wall)
+Context
+You are working inside a Laravel 11 application for a SaaS called Fortlify.
+This is a single app, single deployment that behaves differently based on the request host.
+Current Domains
+fortlify.com → public marketing site (no auth)
+app.fortlify.com → private beta app (auth required)
+This is temporary. At launch, the app will move to fortlify.com and the subdomain may be removed.
+Objective
+Implement a domain-aware separation between marketing and app contexts without creating two apps.
+Requirements (Must Follow Exactly)
+Single codebase
+Do NOT create a second app, repo, or service
+Do NOT duplicate controllers
+Domain-aware routing
+Detect the host at runtime
+fortlify.com serves marketing routes only
+app.fortlify.com serves app routes only
+Auth wall
+ALL routes under app.fortlify.com require authentication
+No public access to app routes
+If not logged in, redirect to login
+Invite-only beta
+Disable public user registration
+Remove or block /register
+Do NOT add signup UI
+No SEO indexing for the app
+Add <meta name="robots" content="noindex, nofollow"> ONLY when in app context
+Marketing site remains indexable
+Clean future launch path
+Do NOT hard-code business logic to the subdomain
+Centralize domain detection in one helper or config
+Make it easy to remove domain checks later
+Login UX
+Login page should indicate “Private Beta”
+No signup links
+No marketing copy on the app domain
+Implementation Guidance
+Add a helper such as isAppContext() that returns true when the host is app.fortlify.com
+Use this helper for:
+Routing decisions
+Auth middleware application
+SEO noindex behavior
+Use Laravel’s standard auth middleware
+Keep marketing routes and app routes clearly separated
+Do NOT Do Any of the Following
+Do NOT create two Laravel apps
+Do NOT create separate deployments
+Do NOT add feature flags, billing, teams, or roles
+Do NOT over-engineer
+Do NOT assume the subdomain exists forever
+Expected Result
+Visiting fortlify.com shows a public marketing page
+Visiting app.fortlify.com:
+Requires login
+Cannot be indexed
+Cannot be accessed without authentication
+Code is clean, minimal, and reversible for launch
